@@ -5,9 +5,12 @@ import "net/http"
 
 func main() {
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
+	r.LoadHTMLGlob("templates/*")
+	r.Static("/assets", "static/assets")
+	r.Static("/data", "static/data")
+	r.GET("/toon", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "toon.tmpl", gin.H{
+			"image": "goat_toon.jpg",
 		})
 	})
 	r.Run()

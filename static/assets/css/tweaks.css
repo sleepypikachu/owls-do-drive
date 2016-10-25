@@ -1,0 +1,66 @@
+.level {
+    width:100%;
+}
+
+.tile {
+    padding: 10px;
+}
+
+.column {
+    margin-left:5px;
+    margin-right:5px;
+    margin-top:10px;
+}
+
+body {
+    background:#FFF;
+}
+
+.share-button svg{
+    color: white;
+    fill: white;
+}
+
+.share-button a{
+    color: white;
+}
+
+.reddit {
+    background-color: rgb(58, 128, 193);
+}
+
+.facebook {
+    background-color: rgb(59, 89, 152);
+}
+
+.twitter {
+    background-color: rgb(85, 172, 238);
+}
+
+.tumblr {
+    background-color: rgb(53, 70, 92);
+}
+
+.button-nav {
+    background-color: #da67a2;
+}
+
+
+.svg {
+    max-width:100%;
+    width:auto;
+    height:auto;
+}
+
+.link {
+    max-height: 5em;
+}
+
+.nav {
+    max-height: 15em;
+}
+
+.mast-head {
+    max-height: 15em;
+}
+
