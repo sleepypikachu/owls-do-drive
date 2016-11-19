@@ -7,6 +7,11 @@
         <title>Owl's Don't Dance</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.1.2/css/bulma.css">
         <link rel="stylesheet" href="./assets/css/tweaks.css">
+        <meta property="og:url" content="http://www.oddcartoons.com/{{ .num }}"/>
+        <meta property="og:title" content="{{ .title }}"/>
+        <meta property="og:image" content="{{ .image }}"/>
+        <meta property="og:description" content="Check out {{ .title }} by Lauren Dunlop on Owl's Don't Dance"/>
+        <meta property="og:site_name" content="Owl's Don't Dance"/>
     </head>
     <body>
         <!-- Masthead -->
@@ -58,7 +63,7 @@
 
                     <div class="tile is-10-12">
                         <figure class="image">
-                            <img alt='Some witty comment here.' src="./data/{{ .image }}"/>
+                            <img title="{{ .alt }}" src="./data/{{ .image }}"/>
                         </figure>
                     </div>
 
