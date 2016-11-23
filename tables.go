@@ -1,8 +1,8 @@
 package main
 
 type Post struct {
-	num   int
-	title string
-	alt   string
-	image string
+	Num   int    `json:"num"`
+	Title string `json:"title"`
+	Alt   string `json:"alt"`
+	Image string `json:"image"`
 }

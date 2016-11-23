@@ -1,7 +1,7 @@
 package main
 
-import "encoding/json"
 import "encoding/binary"
+import "fmt"
 import "github.com/boltdb/bolt"
 import "github.com/gin-gonic/gin"
 import "net/http"
@@ -14,14 +14,8 @@ func main() {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		var err error
-		b := tx.Bucket([]byte("posts"))
-		if err != nil {
-			panic(err)
-		}
-		j, _ := json.Marshal(&Post{num: 1, title: "To-Do List", alt: "They really really needed to buy that wrench :(", image: "goat_toon.jpg"})
-		id, _ := b.NextSequence()
-		return b.Put(itob(int(id)), j)
+		_, err := tx.CreateBucketIfNotExists([]byte("posts"))
+		return err
 	})
 
 	if err != nil {
@@ -35,14 +29,15 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		p := &Post{}
 		db.View(func(tx *bolt.Tx) error {
+			fmt.Println("there!")
 			p = Latest(tx)
 			return nil
 		})
 		c.HTML(http.StatusOK, "toon.tmpl", gin.H{
-			"title": &p.title,
-			"image": &p.image,
-			"alt":   &p.alt,
-			"num":   &p.num,
+			"title": &p.Title,
+			"image": &p.Image,
+			"alt":   &p.Alt,
+			"num":   &p.Num,
 		})
 	})
 	r.Run()

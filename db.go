@@ -1,21 +1,19 @@
 package main
 
 import "encoding/json"
-import "fmt"
 import "github.com/boltdb/bolt"
 
 func Latest(tx *bolt.Tx) *Post {
 	b := tx.Bucket([]byte("posts"))
 
-	var cur *Post
+	cur := &Post{Num: -1, Title: "No Posts Found!", Alt: "No Posts Found!", Image: ""}
 	b.ForEach(func(k, v []byte) error {
-		var p *Post
+		p := &Post{}
 		err := json.Unmarshal(v, p)
 		if err != nil {
 			return err
 		}
-		fmt.Println(p.num)
-		cur = compare(cur, p)
+		cur = p
 		return nil
 	})
 
@@ -29,7 +27,7 @@ func compare(cur *Post, p *Post) *Post {
 	if p == nil {
 		return cur
 	}
-	if cur.num > p.num {
+	if cur.Num > p.Num {
 		return cur
 	}
 	return p
