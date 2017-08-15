@@ -45,6 +45,15 @@ body {
     background-color: #da67a2;
 }
 
+.nav-bar {
+    max-height: 300px;
+}
+
+.nav-link {
+    width: auto;
+    margin: 0 auto;
+}
+
 
 .svg {
     max-width:100%;

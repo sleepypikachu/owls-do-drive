@@ -1,46 +1,70 @@
 package main
 
 import "encoding/binary"
-import "fmt"
-import "github.com/boltdb/bolt"
+import "github.com/gin-contrib/multitemplate"
 import "github.com/gin-gonic/gin"
+import "html/template"
 import "net/http"
+import "path/filepath"
 
 func main() {
-	db, err := bolt.Open("owls.db", 0600, nil)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("posts"))
-		return err
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
+	d := DummyDatasource()
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+	r.HTMLRender = makeMultiRenderer("./templates/")
 	r.Static("/assets", "static/assets")
 	r.Static("/data", "static/data")
-	r.GET("/", func(c *gin.Context) {
-		p := &Post{}
-		db.View(func(tx *bolt.Tx) error {
-			fmt.Println("there!")
-			p = Latest(tx)
-			return nil
+	r.GET("/", renderToon(d.Latest()))
+	r.GET("/random", renderToon(d.Random()))
+	r.GET("/archive", func(c *gin.Context) {
+		p := d.Archive()
+		c.HTML(http.StatusOK, "archive.tmpl", gin.H{
+			"posts": &p,
 		})
+	})
+	r.Run()
+}
+
+func makeMultiRenderer(templatesDir string) multitemplate.Render {
+	r := multitemplate.New()
+
+	layouts, err := filepath.Glob(templatesDir + "layouts/*.tmpl")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	includes, err := filepath.Glob(templatesDir + "includes/*.tmpl")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// Generate our templates map from our layouts/ and includes/ directories
+	for _, layout := range layouts {
+		files := append(includes, layout)
+		r.Add(filepath.Base(layout), template.Must(template.ParseFiles(files...)))
+	}
+	return r
+}
+
+func renderToon(p *Post) gin.HandlerFunc {
+	if p == nil {
+		panic("Post was nil")
+	}
+	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "toon.tmpl", gin.H{
 			"title": &p.Title,
 			"image": &p.Image,
 			"alt":   &p.Alt,
 			"num":   &p.Num,
 		})
-	})
-	r.Run()
+	}
+}
+
+func renderArchive(p *[]Post) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "archive.tmpl", gin.H{
+			"posts": &p,
+		})
+	}
 }
 
 // itob returns an 8-byte big endian representation of v.

@@ -1,23 +1,70 @@
 package main
 
-import "encoding/json"
-import "github.com/boltdb/bolt"
+type Datasource interface {
+	/* Posts */
+	Latest() *Post
+	Random() *Post
+	Get(num int) *Post
+	Store(*Post) error
+	Delete(*Post) error
+	Restore(*Post) error
+	Archive() *[]Post
 
-func Latest(tx *bolt.Tx) *Post {
-	b := tx.Bucket([]byte("posts"))
+	/* Users */
+	login(username string, password string) (*User, error)
+	changePassword(username string, newPassword string) error
+	create(User) error
+}
 
-	cur := &Post{Num: -1, Title: "No Posts Found!", Alt: "No Posts Found!", Image: ""}
-	b.ForEach(func(k, v []byte) error {
-		p := &Post{}
-		err := json.Unmarshal(v, p)
-		if err != nil {
-			return err
-		}
-		cur = p
-		return nil
-	})
+type dummyDatasource struct {
+	name string
+}
 
-	return cur
+func (d dummyDatasource) Latest() *Post {
+	return &Post{Num: 1, Title: "Sample Post", Alt: "Sample", Image: "goat_toon.jpg"}
+}
+
+func (d dummyDatasource) Random() *Post {
+	return d.Latest()
+}
+
+func (d dummyDatasource) Archive() *[]Post {
+	var archive = make([]Post, 1)
+	archive[0] = *d.Latest()
+	return &archive
+}
+
+func (d dummyDatasource) Get(num int) *Post {
+	return d.Latest()
+}
+
+func (d dummyDatasource) Store(*Post) error {
+	return nil
+}
+
+func (d dummyDatasource) Delete(*Post) error {
+	return nil
+}
+
+func (d dummyDatasource) Restore(*Post) error {
+	return nil
+}
+
+func (d dummyDatasource) login(username string, password string) (*User, error) {
+	return &User{d.name, "foo", false}, nil
+}
+
+func (d dummyDatasource) changePassword(username string, newPassword string) error {
+	return nil
+}
+
+func (d dummyDatasource) create(u User) error {
+	d.name = u.Name
+	return nil
+}
+
+func DummyDatasource() Datasource {
+	return dummyDatasource{}
 }
 
 func compare(cur *Post, p *Post) *Post {
