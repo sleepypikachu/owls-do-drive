@@ -1,5 +1,5 @@
 .level {
-    width:100%;
+    width:100% !important;
 }
 
 .tile {
@@ -62,7 +62,7 @@ body {
 }
 
 .link {
-    max-height: 5em;
+    max-height: 3em;
 }
 
 .nav {

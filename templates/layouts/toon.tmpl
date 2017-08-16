@@ -1,44 +1,39 @@
 {{ define "headers" }}
-<meta property="og:url" content="http://www.oddcartoons.com/{{ .num }}"/>
+<meta property="og:url" content="https://www.oddcartoons.com/post/{{ .num }}"/>
 <meta property="og:title" content="{{ .title }}"/>
 <meta property="og:image" content="{{ .image }}"/>
 <meta property="og:description" content="Check out {{ .title }} by Lauren Dunlop on Owl's Don't Dance"/>
 {{ end }}
 {{ define "content" }}
-<!-- Comic Controls -->
-<div class="tile is-parent is-vertical">
-    <!-- Random -->
-    <div class="tile is-1-12">
+<!-- Random -->
+<div class="tile is-1 level">
+    <a href="/random" class="level-item has-text-centered" title='Random'>
+        <img class="link svg" alt='Random' src="/assets/nav/random.svg"/>
+    </a>
+</div>
+<div class="tile is-parent">
+    <!-- Left -->
+    <div class="tile is-1 is-hidden-mobile">
         <div class="level">
-            <div class="level-item has-text-centered">
-                <a href="/random"><img class="svg link" alt='Random' src="./assets/nav/random.svg"/></a>
-            </div>
-        </div>
-    </div>
-    <div class="tile is-parent">
-        <!-- Left -->
-        <div class="tile is-1-12 is-hidden-mobile">
-            <div class="level">
-                <figure class="level-item">
-                    <img class="svg link" alt="Left" src="./assets/nav/arrow-left.svg"/>
-                </figure>
-            </div>
-        </div>
-
-        <!-- Cartoon -->
-        <div class="tile is-10-12">
-            <figure class="image">
-                <img title="{{ .alt }}" src="./data/{{ .image }}"/>
+            <figure class="level-item">
+                <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
             </figure>
         </div>
+    </div>
 
-        <!-- Right -->
-        <div class="tile is-1-12 is-hidden-mobile">
-            <div class="level">
-                <figure class="level-item">
-                    <img class="svg link" alt="Right" src="./assets/nav/arrow-right.svg"/>
-                </figure>
-            </div>
+    <!-- Cartoon -->
+    <div class="tile is-10">
+        <figure class="image">
+            <img title="{{ .alt }}" src="/data/{{ .image }}"/>
+        </figure>
+    </div>
+
+    <!-- Right -->
+    <div class="tile is-1 is-hidden-mobile">
+        <div class="level">
+            <figure class="level-item">
+                <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+            </figure>
         </div>
     </div>
 </div>
@@ -48,8 +43,8 @@
 <div class="is-hidden-tablet">
     <div class="level">
         <figure class="level-item has-text-centered">
-            <img class="svg link" alt="Left" src="./assets/nav/arrow-left.svg"/>
-            <img class="svg link" alt="Right" src="./assets/nav/arrow-right.svg"/>
+            <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
+            <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
         </figure>
     </div>
 </div>

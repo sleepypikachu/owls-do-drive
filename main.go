@@ -6,6 +6,9 @@ import "github.com/gin-gonic/gin"
 import "html/template"
 import "net/http"
 import "path/filepath"
+import "strconv"
+
+const postPathParam = "num"
 
 func main() {
 	d := DummyDatasource()
@@ -14,6 +17,7 @@ func main() {
 	r.Static("/assets", "static/assets")
 	r.Static("/data", "static/data")
 	r.GET("/", renderToon(d.Latest()))
+	r.GET("/post/:"+postPathParam, renderById(d))
 	r.GET("/random", renderToon(d.Random()))
 	r.GET("/archive", func(c *gin.Context) {
 		p := d.Archive()
@@ -47,7 +51,9 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 
 func renderToon(p *Post) gin.HandlerFunc {
 	if p == nil {
-		panic("Post was nil")
+		return func(c *gin.Context) {
+			c.HTML(http.StatusNotFound, "404.tmpl", gin.H{})
+		}
 	}
 	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "toon.tmpl", gin.H{
@@ -56,6 +62,21 @@ func renderToon(p *Post) gin.HandlerFunc {
 			"alt":   &p.Alt,
 			"num":   &p.Num,
 		})
+	}
+}
+
+func renderById(d Datasource) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param(postPathParam)
+		id, err := strconv.Atoi(idStr)
+		var p *Post
+		if err != nil {
+			p = nil
+		} else {
+			p = d.Get(id)
+		}
+
+		renderToon(p)(c)
 	}
 }
 
