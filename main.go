@@ -7,23 +7,39 @@ import "html/template"
 import "net/http"
 import "path/filepath"
 import "strconv"
+import "gopkg.in/gcfg.v1"
+import "log"
 
 const postPathParam = "num"
 
 func main() {
-	d := DummyDatasource()
+	cfg := struct {
+		Database struct {
+			User string
+			Pass string
+			Url  string
+			Name string
+		}
+	}{}
+
+	err := gcfg.ReadFileInto(&cfg, "./odd.cfg")
+
+	if err != nil {
+		log.Fatalf("Failed to parse gcfg data %s", err)
+	}
+
+	d := PgDatasource(cfg.Database.User, cfg.Database.Name)
+
 	r := gin.Default()
 	r.HTMLRender = makeMultiRenderer("./templates/")
 	r.Static("/assets", "static/assets")
 	r.Static("/data", "static/data")
 	r.GET("/", renderToon(d.Latest()))
 	r.GET("/post/:"+postPathParam, renderById(d))
-	r.GET("/random", renderToon(d.Random()))
-	r.GET("/archive", func(c *gin.Context) {
-		p := d.Archive()
-		c.HTML(http.StatusOK, "archive.tmpl", gin.H{
-			"posts": &p,
-		})
+	r.GET("/random", randomToon(d))
+	r.GET("/archive", renderArchive(d))
+	r.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404.tmpl", gin.H{})
 	})
 	r.Run()
 }
@@ -65,6 +81,13 @@ func renderToon(p *Post) gin.HandlerFunc {
 	}
 }
 
+func randomToon(d Datasource) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		p := d.Random()
+		renderToon(p)(c)
+	}
+}
+
 func renderById(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param(postPathParam)
@@ -80,8 +103,9 @@ func renderById(d Datasource) gin.HandlerFunc {
 	}
 }
 
-func renderArchive(p *[]Post) gin.HandlerFunc {
+func renderArchive(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		p := d.Archive()
 		c.HTML(http.StatusOK, "archive.tmpl", gin.H{
 			"posts": &p,
 		})

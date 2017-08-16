@@ -26,4 +26,4 @@ _testmain.go
 .DS_Store
 owls-do-drive
 static/data
-owls.db
+odd.cfg
