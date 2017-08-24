@@ -1,8 +1,8 @@
 {{ define "headers" }}
-<meta property="og:url" content="https://www.oddcartoons.com/post/{{ .num }}"/>
-<meta property="og:title" content="{{ .title }}"/>
-<meta property="og:image" content="{{ .image }}"/>
-<meta property="og:description" content="Check out {{ .title }} by Lauren Dunlop on Owl's Don't Dance"/>
+<meta property="og:url" content="{{ .post | url }}"/>
+<meta property="og:title" content="{{ .post.Title }}"/>
+<meta property="og:image" content="{{ .post.Image }}"/>
+<meta property="og:description" content="Check out {{ .post.Title }} by Lauren Dunlop on Owl's Don't Dance"/>
 {{ end }}
 {{ define "content" }}
 <!-- Random -->
@@ -28,7 +28,7 @@
     <!-- Cartoon -->
     <div class="tile is-10">
         <figure class="image">
-            <img title="{{ .alt }}" src="/data/{{ .image }}"/>
+            <img title="{{ .post.Alt }}" src="{{ .post | image }}"/>
         </figure>
     </div>
 
@@ -72,7 +72,7 @@
 <div class="columns">
     <!-- Facebook -->
     <div class="column">
-        <a href="#">
+        <a href="{{ .post | facebook }}">
         <p class="box share-button facebook has-text-centered">
         <svg version="1.1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
             <g>
@@ -86,7 +86,7 @@
 
     <!-- Twitter -->
     <div class="column">
-        <a href="#">
+        <a href="{{ .post | twitter }}">
         <p class="box share-button twitter has-text-centered">
             <svg version="1.1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
                 <g>
@@ -101,7 +101,7 @@
 
     <!-- Tumblr -->
     <div class="column">
-        <a href="#">
+        <a href="{{ .post | tumblr }}">
         <p class="box share-button tumblr has-text-centered">
             <svg version="1.1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
                 <g>
@@ -116,7 +116,7 @@
 
     <!-- Reddit -->
     <div class="column">
-        <a href="#">
+        <a href="{{ .post | reddit }}">
         <p class="box share-button reddit has-text-centered">
             <svg version="1.1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
                 <path d="M24,11.5c0-1.654-1.346-3-3-3c-0.964,0-1.863,0.476-2.422,1.241c-1.639-1.006-3.747-1.64-6.064-1.723 c0.064-1.11,0.4-3.049,1.508-3.686c0.72-0.414,1.733-0.249,3.01,0.478C17.189,6.317,18.452,7.5,20,7.5c1.654,0,3-1.346,3-3 s-1.346-3-3-3c-1.382,0-2.536,0.944-2.883,2.217C15.688,3,14.479,2.915,13.521,3.466c-1.642,0.945-1.951,3.477-2.008,4.551 C9.186,8.096,7.067,8.731,5.422,9.741C4.863,8.976,3.964,8.5,3,8.5c-1.654,0-3,1.346-3,3c0,1.319,0.836,2.443,2.047,2.844

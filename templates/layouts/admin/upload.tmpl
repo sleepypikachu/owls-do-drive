@@ -3,9 +3,9 @@
     <div class="tile is-child is-3">
         <form id="post-form" method="POST" enctype="multipart/form-data" action="/api/post">
             {{if .Post}}
-            <input class="input" type="text" id="post-num" style="display:none;" value="{{.Post.Num}}"/>
-            <input class="input" type="text" id="post-deleted" style="display:none;" value="{{.Post.Deleted}}"/>
-            <input class="input" type="text" id="post-image-id" style="display:none;" value="{{.Post.Image}}"/>
+            <input class="input" type="text" name="post-num" id="post-num" style="display:none;" value="{{.Post.Num}}"/>
+            <input class="input" type="text" name="post-deleted" id="post-deleted" style="display:none;" value="{{.Post.Deleted}}"/>
+            <input class="input" type="text" name="post-image-id" id="post-image-id" style="display:none;" value="{{.Post.Image}}"/>
             {{end}}
             <div class="field">
                 <label class="label" for="post-title">Title</label> <input class="input" type="text" id="post-title" name="post-title" {{ if .Post }}value="{{.Post.Title}}"{{end}}></input>
@@ -52,7 +52,6 @@
                 }
                 $("#post-form").ajaxSubmit(options);
             });
-            console.log({{.Post.Posted | unixTime}})
             flatpickr("#post-publish-date", {
                 {{ if .Post }}
                 defaultDate: new Date({{ .Post.Posted | unixTime }}),

@@ -6,6 +6,7 @@ import "github.com/gin-gonic/gin"
 import "github.com/google/uuid"
 import "html/template"
 import "net/http"
+import "net/url"
 import "path/filepath"
 import "strconv"
 import "strings"
@@ -16,6 +17,13 @@ import "time"
 const postPathParam = "num"
 const apiRoute = "/api"
 
+type Location struct {
+	Domain   string
+	Protocol string
+}
+
+var location Location
+
 func main() {
 	cfg := struct {
 		Database struct {
@@ -24,6 +32,7 @@ func main() {
 			Url  string
 			Name string
 		}
+		Location Location
 	}{}
 
 	err := gcfg.ReadFileInto(&cfg, "./odd.cfg")
@@ -33,6 +42,7 @@ func main() {
 	}
 
 	d := PgDatasource(cfg.Database.User, cfg.Database.Name)
+	location = cfg.Location
 
 	r := gin.Default()
 	r.HTMLRender = makeMultiRenderer("./templates/")
@@ -90,10 +100,52 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 		return t.Unix() * 1000
 	}
 
+	canonical := func(p Post) string {
+		return location.Protocol + location.Domain + "/post/" + strconv.Itoa(p.Num)
+	}
+
+	image := func(p Post) string {
+		return location.Protocol + location.Domain + "/data/" + p.Image
+	}
+
+	facebook := func(p Post) string {
+		v := make(url.Values)
+		v.Add("u", canonical(p))
+		return "https://www.facebook.com/sharer/sharer.php" + v.Encode()
+	}
+
+	twitter := func(p Post) string {
+		v := make(url.Values)
+		v.Add("text", "Check out "+p.Title+" from Owls Don't Dance!")
+		v.Add("url", canonical(p))
+		return "https://twitter.com/intent/tweet" + v.Encode()
+	}
+
+	reddit := func(p Post) string {
+		v := make(url.Values)
+		v.Add("url", canonical(p))
+		v.Add("title", p.Title)
+		return "https://www.reddit.com/submit" + v.Encode()
+	}
+
+	tumblr := func(p Post) string {
+		v := make(url.Values)
+		v.Add("canonicalUrl", canonical(p))
+		v.Add("posttype", "photo")
+		v.Add("content", image(p))
+		return "https://www.tumblr.com/widgets/share/tool" + v.Encode()
+	}
+
 	funcs := template.FuncMap{
 		"prettyTime": prettyTime,
 		"scheduled":  scheduled,
 		"unixTime":   unixTime,
+		"url":        canonical,
+		"facebook":   facebook,
+		"twitter":    twitter,
+		"reddit":     reddit,
+		"tumblr":     tumblr,
+		"image":      image,
 	}
 
 	for _, layout := range layouts {
@@ -118,24 +170,10 @@ func renderToon(p *Post, d Datasource) gin.HandlerFunc {
 			c.HTML(http.StatusNotFound, "error.tmpl", gin.H{})
 		}
 	}
-	prev, next, err := d.PrevNext(p)
-	if err != nil {
-		log.Print(err)
-		return func(c *gin.Context) {
-			c.HTML(http.StatusInternalServerError, "error.tmpl", gin.H{
-				"Error": gin.H{
-					"Code":    "500",
-					"Message": "Database Error, this has been logged. :-(",
-				},
-			})
-		}
-	}
+	prev, next := d.PrevNext(p)
 	return func(c *gin.Context) {
 		content := gin.H{
-			"title": &p.Title,
-			"image": &p.Image,
-			"alt":   &p.Alt,
-			"num":   &p.Num,
+			"post": p,
 		}
 		if prev != nil {
 			content["prev"] = &prev
@@ -157,7 +195,7 @@ func randomToon(d Datasource) gin.HandlerFunc {
 func latestToon(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := d.Latest()
-		renderToon(p, d)(c)
+		c.Redirect(http.StatusFound, "/post/"+strconv.Itoa(p.Num))
 	}
 }
 
@@ -253,12 +291,38 @@ func handleNewPost(d Datasource) gin.HandlerFunc {
 		}
 
 		post.Posted = time.Unix(i, 0)
-		post.Deleted = false
 
 		field, exists := c.GetPostForm("post-image-id")
 		if exists {
 			post.Image = field
+			var num string
+			var deleted string
+			if !exField("post-num", &num) ||
+
+				!exField("post-deleted", &deleted) {
+				return
+			}
+
+			post.Num, err = strconv.Atoi(num)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":      "conversion_error",
+					"field_name": "post-num",
+				})
+				return
+			}
+
+			post.Deleted, err = strconv.ParseBool(deleted)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":      "conversion_error",
+					"field_name": "post-deleted",
+				})
+				return
+
+			}
 		} else {
+			post.Deleted = false
 			file, err := c.FormFile("post-image")
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -276,7 +340,6 @@ func handleNewPost(d Datasource) gin.HandlerFunc {
 				return
 			}
 			post.Image = fileUuid
-
 		}
 
 		err = d.Store(&post)

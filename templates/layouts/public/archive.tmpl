@@ -1,7 +1,7 @@
 {{ define "content" }}
-<ul>
+<div class="content">
     {{ range .posts }}
-    <li><a href="/post/{{ .Num }}">{{ .Title }}</a></li>
+    <h2><a href="/post/{{ .Num }}">{{ .Title }}</a></h2>
     {{ end }}
-</ul>
+</div>
 {{ end }}

@@ -27,7 +27,7 @@ func PgDatasource(user string, name string) Datasource {
 
 func (d pgDatasource) Latest() *Post {
 	var p Post
-	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY num DESC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
+	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY posted DESC, num DESC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
 
 	if err != nil {
 		return nil
@@ -47,8 +47,8 @@ func (d pgDatasource) Random() *Post {
 }
 
 func (d pgDatasource) Archive(admin bool) *[]Post {
-	adminQuery := "SELECT * FROM posts ORDER BY num DESC"
-	userQuery := "SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY num ASC"
+	adminQuery := "SELECT * FROM posts ORDER BY posted DESC, num DESC"
+	userQuery := "SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY posted ASC, num ASC"
 	var query string
 	if admin {
 		query = adminQuery
@@ -111,33 +111,27 @@ func (d pgDatasource) Restore(p *Post) error {
 	return d.Store(p)
 }
 
-func (d pgDatasource) PrevNext(p *Post) (*int, *int, error) {
-	rows, err := d.db.Query("SELECT num FROM posts WHERE NOT deleted AND posted <= current_timestamp")
-	if err != nil {
-		return nil, nil, err
-	}
-	nums := make([]int, 0)
-	defer rows.Close()
-	for rows.Next() {
-		var i int
-		rows.Scan(&i)
-		nums = append(nums, i)
-	}
+func (d pgDatasource) PrevNext(p *Post) (*int, *int) {
+	var x int
+	var y int
 	var prev *int
 	var next *int
-	for _, i := range nums {
-		if i < p.Num && (prev == nil || i > *prev) {
-			v := int(i)
-			prev = &v
-		}
-
-		if i > p.Num && (next == nil || i < *next) {
-			v := int(i)
-			next = &v
-		}
+	err := d.db.QueryRow("SELECT num FROM posts WHERE NOT deleted AND posted <= current_timestamp AND ((posted = $2 AND num < $1) OR posted < $2) ORDER BY posted DESC, num DESC", &p.Num, &p.Posted).Scan(&x)
+	if err != nil {
+		log.Print(err)
+		prev = nil
+	} else {
+		prev = &x
 	}
 
-	return prev, next, nil
+	err = d.db.QueryRow("SELECT num FROM posts WHERE NOT deleted AND posted <= current_timestamp AND ((posted = $2 AND num > $1) OR posted > $2) ORDER BY posted ASC, num ASC", &p.Num, &p.Posted).Scan(&y)
+	if err != nil {
+		log.Print(err)
+		next = nil
+	} else {
+		next = &y
+	}
+	return prev, next
 }
 
 func (d pgDatasource) login(username string, password string) (*User, error) {

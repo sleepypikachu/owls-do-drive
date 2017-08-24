@@ -9,7 +9,7 @@ type Datasource interface {
 	Delete(*Post) error
 	Restore(*Post) error
 	Archive(admin bool) *[]Post
-	PrevNext(*Post) (*int, *int, error)
+	PrevNext(*Post) (*int, *int)
 
 	/* Users */
 	login(username string, password string) (*User, error)
@@ -64,8 +64,8 @@ func (d dummyDatasource) create(u User) error {
 	return nil
 }
 
-func (d dummyDatasource) PrevNext(p *Post) (*int, *int, error) {
-	return nil, nil, nil
+func (d dummyDatasource) PrevNext(p *Post) (*int, *int) {
+	return nil, nil
 }
 
 func DummyDatasource() Datasource {
