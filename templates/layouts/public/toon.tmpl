@@ -15,9 +15,13 @@
     <!-- Left -->
     <div class="tile is-1 is-hidden-mobile">
         <div class="level">
-            <figure class="level-item">
-                <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
-            </figure>
+            {{ if .prev }}
+                <a href="/post/{{ .prev }}">
+                <figure class="level-item">
+                    <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
+                </figure>
+            </a>
+            {{ end }}
         </div>
     </div>
 
@@ -31,9 +35,17 @@
     <!-- Right -->
     <div class="tile is-1 is-hidden-mobile">
         <div class="level">
+            {{ if .next }}
+            <a href="/post/{{ .next }}">
+                <figure class="level-item">
+                    <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+                </figure>
+            </a>
+            {{ else }}
             <figure class="level-item">
-                <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+                <img class="link" alt="New Cartoon on Mondays" src="/assets/nav/newtoon.png"/>
             </figure>
+            {{ end }}
         </div>
     </div>
 </div>
@@ -43,8 +55,16 @@
 <div class="is-hidden-tablet">
     <div class="level">
         <figure class="level-item has-text-centered">
-            <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
-            <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+            {{ if .prev }}
+            <a href="/post/{{ .prev }}">
+                <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
+            </a>
+            {{ end }}
+            {{ if .next }}
+            <a href="/post/{{ .next }}">
+                <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+            </a>
+            {{ end }}
         </figure>
     </div>
 </div>

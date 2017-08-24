@@ -1,0 +1,68 @@
+{{ define "admin.tmpl" }}
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Owl's Don't Dance - Admin Console</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.css">
+        <link rel="stylesheet" href="/assets/css/admin.css">
+        <script src="https://use.fontawesome.com/0c6533fe9f.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+        <script src="https://unpkg.com/flatpickr"></script>
+        <script src="/assets/js/jquery-3.2.1.min.js"></script>
+        <script src="http://malsup.github.com/jquery.form.js"></script> 
+        {{ template "headers" . }}
+    </head>
+    <body>
+
+        <!-- Wide Nav -->
+        <div class="level wide-nav">
+            <div class="level-left">
+                <figure class="level-item header-image">
+                    <img src="/assets/nav/topowl.png" alt="Orville"/>
+                </figure>
+                <span class="level-item">Odd Cartoons Admin Page</span>
+            </div>
+            <div class="level-right">
+                <span class="level-item">
+                    Hello, {{.User.Name}}!
+                </span>
+                <span class="level-item">
+                    <a href="/" class="button">Logout</a>
+                </span>
+            </div>
+        </div>
+        <hr>
+
+        <div class="tile is-ancestor content">
+
+            <!-- Side Nav -->
+            <div class="tile is-2 is-parent is-vertical side-nav">
+                <a href="/admin/" id="button-upload" class="tile is-child button">
+                    <span class="icon"><span class="fa fa-upload"></span></span>
+                    <span>Upload</span>
+                </a>
+                <a href="/admin/archive/" id="button-archive" class="tile is-child button">
+                    <span class="icon"><span class="fa fa-history"></span></span>
+                    <span>Archive</span>
+                </a>
+                <a id="button-analytics" class="tile is-child button">
+                    <span class="icon"><span class="fa fa-line-chart"></span></span>
+                    <span>Analytics</span>
+                </a>
+            </div>
+
+            <!-- Main Content -->
+            <div class="tile is-parent is-10">
+                {{ template "content" . }}
+            </div>
+        </div>
+        <!-- Page Selector -->
+        <script type="text/javascript">
+document.getElementById("{{ template "button-id" . }}").classList.add("is-primary")
+        </script>
+    </body>
+</html>
+{{ end }}
+{{ define "headers" }}{{end}}

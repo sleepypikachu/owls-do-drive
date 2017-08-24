@@ -1,0 +1,43 @@
+.header-image img {
+    height: 3.5em;
+}
+
+.wide-nav {
+    padding: 0.5em;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.image-preview {
+    height: 100%;
+}
+
+.content {
+    height: 100%;
+    padding: 1em;
+}
+
+.side-nav a {
+    max-height: 2em;
+}
+
+a .icon {
+    float: left;
+}
+
+.auto-columns {
+    display: grid;
+    width: auto;
+    grid-template-areas: "a a a";
+    grid-auto-columns: 33%;
+    grid-gap: 1%;
+}
+
+.auto-column {
+    height: 100%;
+}
+

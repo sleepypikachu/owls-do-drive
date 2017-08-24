@@ -27,7 +27,7 @@ func PgDatasource(user string, name string) Datasource {
 
 func (d pgDatasource) Latest() *Post {
 	var p Post
-	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted ORDER BY num DESC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Deleted)
+	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY num DESC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
 
 	if err != nil {
 		return nil
@@ -38,7 +38,7 @@ func (d pgDatasource) Latest() *Post {
 
 func (d pgDatasource) Random() *Post {
 	var p Post
-	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted ORDER BY random() ASC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Deleted)
+	err := d.db.QueryRow("SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY random() ASC").Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
 
 	if err != nil {
 		return nil
@@ -46,8 +46,16 @@ func (d pgDatasource) Random() *Post {
 	return &p
 }
 
-func (d pgDatasource) Archive() *[]Post {
-	rows, err := d.db.Query("SELECT * FROM POSTS WHERE NOT deleted")
+func (d pgDatasource) Archive(admin bool) *[]Post {
+	adminQuery := "SELECT * FROM posts ORDER BY num DESC"
+	userQuery := "SELECT * FROM posts WHERE NOT deleted AND posted <= current_timestamp ORDER BY num ASC"
+	var query string
+	if admin {
+		query = adminQuery
+	} else {
+		query = userQuery
+	}
+	rows, err := d.db.Query(query)
 
 	if err != nil {
 		return nil
@@ -58,16 +66,22 @@ func (d pgDatasource) Archive() *[]Post {
 	var archive = make([]Post, 0)
 	for rows.Next() {
 		var p Post
-		rows.Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Deleted)
+		rows.Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
 		archive = append(archive, p)
 	}
 
 	return &archive
 }
 
-func (d pgDatasource) Get(num int) *Post {
+func (d pgDatasource) Get(num int, admin bool) *Post {
 	var p Post
-	err := d.db.QueryRow(fmt.Sprintf("SELECT * FROM posts WHERE num = %d AND NOT deleted", num)).Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Deleted)
+	var query string
+	if admin {
+		query = "SELECT * FROM posts WHERE num = %d"
+	} else {
+		query = "SELECT * FROM posts WHERE num = %d AND NOT deleted AND posted <= current_timestamp"
+	}
+	err := d.db.QueryRow(fmt.Sprintf(query, num)).Scan(&p.Num, &p.Title, &p.Alt, &p.Image, &p.Posted, &p.Deleted)
 	if err != nil {
 		return nil
 	}
@@ -75,18 +89,55 @@ func (d pgDatasource) Get(num int) *Post {
 }
 
 func (d pgDatasource) Store(p *Post) error {
-	_, err := d.db.Exec("INSERT INTO posts(title, alt, image, deleted) values($1, $2, $3, $4)", p.Title, p.Alt, p.Image, p.Deleted)
+	//FIXME:transactions!
+	var err error
+	if p.Num != 0 {
+		//UPDATE
+		_, err = d.db.Exec("UPDATE posts SET title = $2, alt = $3, image = $4, posted = $5, deleted = $6 where num = $1", p.Num, p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
+	} else {
+		//CREATE
+		_, err = d.db.Exec("INSERT INTO posts(title, alt, image, posted, deleted) values($1, $2, $3, $4, $5)", p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
+	}
 	return err
 }
 
 func (d pgDatasource) Delete(p *Post) error {
-	_, err := d.db.Exec(fmt.Sprintf("UPDATE posts SET deleted=true WHERE num = %d", p.Num))
-	return err
+	p.Deleted = true
+	return d.Store(p)
 }
 
 func (d pgDatasource) Restore(p *Post) error {
-	_, err := d.db.Exec(fmt.Sprintf("UPDATE posts SET deleted=false WHERE num = %d", p.Num))
-	return err
+	p.Deleted = false
+	return d.Store(p)
+}
+
+func (d pgDatasource) PrevNext(p *Post) (*int, *int, error) {
+	rows, err := d.db.Query("SELECT num FROM posts WHERE NOT deleted AND posted <= current_timestamp")
+	if err != nil {
+		return nil, nil, err
+	}
+	nums := make([]int, 0)
+	defer rows.Close()
+	for rows.Next() {
+		var i int
+		rows.Scan(&i)
+		nums = append(nums, i)
+	}
+	var prev *int
+	var next *int
+	for _, i := range nums {
+		if i < p.Num && (prev == nil || i > *prev) {
+			v := int(i)
+			prev = &v
+		}
+
+		if i > p.Num && (next == nil || i < *next) {
+			v := int(i)
+			next = &v
+		}
+	}
+
+	return prev, next, nil
 }
 
 func (d pgDatasource) login(username string, password string) (*User, error) {

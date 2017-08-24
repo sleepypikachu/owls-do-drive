@@ -1,0 +1,93 @@
+{{ define "content" }}
+<div class="tile box">
+    <div class="tile is-child is-3">
+        <form id="post-form" method="POST" enctype="multipart/form-data" action="/api/post">
+            {{if .Post}}
+            <input class="input" type="text" id="post-num" style="display:none;" value="{{.Post.Num}}"/>
+            <input class="input" type="text" id="post-deleted" style="display:none;" value="{{.Post.Deleted}}"/>
+            <input class="input" type="text" id="post-image-id" style="display:none;" value="{{.Post.Image}}"/>
+            {{end}}
+            <div class="field">
+                <label class="label" for="post-title">Title</label> <input class="input" type="text" id="post-title" name="post-title" {{ if .Post }}value="{{.Post.Title}}"{{end}}></input>
+            </div>
+            <div class="field">
+                <label class="label" for="post-hover">Hover Text</label> <input class="input" type="text" id="post-hover" name="post-hover" {{ if .Post}}value="{{ .Post.Alt }}"{{end}}></input>
+            </div>
+            <div class="field">
+                <label class="label" for="post-publish-date">Publish Date</label> <input id="post-publish-date" name="post-publish-date" class="input flatpickr flatpickr-input" data-id="flatpickr" readonly="readonly" type="text">
+            </div>
+            <div class="field">
+                <label class="label" for="post-image">Post Image</label>
+                <div class="file is-boxed is-large">
+                    <label class="file-label">
+                        <input class="file-input" type="file" name="post-image" onchange="handleFile(this.files)">
+                        <span class="file-cta">
+                            <span class="file-icon">
+                                <i class="fa fa-upload"></i>
+                            </span>
+                            <span class="file-label">
+                                Choose a file…
+                            </span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button id="post-form-submit" class="button is-primary full-width">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <figure id="preview" class="tile is-child wide-nav has-text-centered image-preview">{{ if .Post }}<img src="/data/{{ .Post.Image }}"/>{{else}}<h2>Image Preview...</h2>{{end}}</figure>
+</div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#post-form-submit').one('click', function(event) {
+                event.preventDefault();
+                $(this).prop('disabled', true);
+                $(this).addClass('is-loading');
+                var options = {
+                    success: function() {window.location="/admin/archive"},
+                }
+                $("#post-form").ajaxSubmit(options);
+            });
+            console.log({{.Post.Posted | unixTime}})
+            flatpickr("#post-publish-date", {
+                {{ if .Post }}
+                defaultDate: new Date({{ .Post.Posted | unixTime }}),
+                {{ else }}
+                defaultDate: "today",
+                {{ end }}
+                enableTime: true,
+                altInput: true,
+                altFormat: "l J M Y H:i",
+                dateFormat: "U"
+            });
+
+        });
+
+        function handleFile(files) {
+           var file = files[0];
+           var imageType = /^image\//;
+
+           if (imageType.test(file.type)) {
+               var previe = document.getElementById("preview");
+               var img = document.createElement("img");
+               img.classList.add("obj");
+               img.file = file;
+               if (preview.hasChildNodes()) {
+                   preview.removeChild(preview.lastChild);
+               }
+               preview.appendChild(img);
+
+               var reader = new FileReader();
+               reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
+               reader.readAsDataURL(file);
+           }
+        }
+    </script>
+{{end}}
+{{ define "button-id" }}{{ if .button }}button-{{ .button }}{{ else }}button-upload{{ end }}{{ end }}
+{{ define "headers" }}
+{{ end }}

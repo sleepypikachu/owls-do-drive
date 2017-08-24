@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS posts (
     title varchar(255) NOT NULL,
     alt varchar(255) NOT NULL,
     image varchar(255) NOT NULL,
+    posted timestamp with time zone NOT NULL,
     deleted boolean DEFAULT false NOT NULL
 );
 

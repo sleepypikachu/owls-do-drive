@@ -4,11 +4,12 @@ type Datasource interface {
 	/* Posts */
 	Latest() *Post
 	Random() *Post
-	Get(num int) *Post
+	Get(num int, admin bool) *Post
 	Store(*Post) error
 	Delete(*Post) error
 	Restore(*Post) error
-	Archive() *[]Post
+	Archive(admin bool) *[]Post
+	PrevNext(*Post) (*int, *int, error)
 
 	/* Users */
 	login(username string, password string) (*User, error)
@@ -28,13 +29,13 @@ func (d dummyDatasource) Random() *Post {
 	return d.Latest()
 }
 
-func (d dummyDatasource) Archive() *[]Post {
+func (d dummyDatasource) Archive(bool) *[]Post {
 	var archive = make([]Post, 1)
 	archive[0] = *d.Latest()
 	return &archive
 }
 
-func (d dummyDatasource) Get(num int) *Post {
+func (d dummyDatasource) Get(num int, admin bool) *Post {
 	return d.Latest()
 }
 
@@ -61,6 +62,10 @@ func (d dummyDatasource) changePassword(username string, newPassword string) err
 func (d dummyDatasource) create(u User) error {
 	d.name = u.Name
 	return nil
+}
+
+func (d dummyDatasource) PrevNext(p *Post) (*int, *int, error) {
+	return nil, nil, nil
 }
 
 func DummyDatasource() Datasource {

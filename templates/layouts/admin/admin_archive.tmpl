@@ -1,0 +1,59 @@
+{{ define "content" }}
+<div class="auto-columns">
+    {{ range .posts }}
+    <div class="auto-column">
+        <div class="card">
+            <div class="card-image">
+                <figure class="image">
+                    <img src="/data/{{ .Image }}" alt="{{ .Title }} Image">
+                </figure>
+            </div>
+            <div class="card-content">
+                <div class="media">
+                    <div class="media-content">
+                        <p class="title is-4"><a href="/post/{{.Num}}">{{ .Title }}</a></p>
+                        <p class="subtitle is-6">{{ .Alt }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div>
+                {{ if .Deleted }}
+                    <span class="tag is-danger">deleted</span>
+                {{ end }}
+                {{ if .Posted | scheduled }}
+                    <span class="tag is-warning">scheduled</span>
+                {{ end }}
+                </div>
+                <small>{{ .Posted | prettyTime }}</small>
+            </div>
+            <div class="card-footer">
+                <a class="card-footer-item" title="edit" href="/admin/post/{{ .Num }}"><span class="icon"><span class="fa fa-pencil"/></span></a>
+                {{ if .Deleted }}
+                <a class="card-footer-item" title="restore" onclick="restorePost({{.Num}})"><span class="icon"><span class="fa fa-undo"/></span></a>
+                {{ else }}
+                <a class="card-footer-item" title="delete" onclick="deletePost({{.Num}})"><span class="icon"><span class="fa fa-trash"/></span></a>
+                {{ end }}
+            </div>
+        </div>
+    </div>
+    {{ end }}
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+    var methodPost = function(id, method) {
+        $.ajax({
+            url: "/api/post/"+id,
+            method: method,
+            success: function() {window.location.reload()}
+        });
+    }
+
+    var deletePost = function(id) {methodPost(id, "DELETE");}
+    var restorePost = function(id) {methodPost(id+"/restore", "POST"); }
+
+</script>
+<script type="text/javascript" src="https://raw.githubusercontent.com/julien-maurel/js-storage/master/js.storage.min.js"></script>
+{{ end }}
+{{ define "button-id" }}button-archive{{end}}
