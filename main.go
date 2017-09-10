@@ -75,7 +75,7 @@ func main() {
 	r.GET("/admin/reset", renderReset())
 
 	admin := r.Group("/admin")
-	//admin.Use(jwtFilter(d))
+	admin.Use(jwtFilter(d))
 	{
 		admin.GET("/", renderUpload())
 		admin.GET("/archive", renderAdminArchive(d))
@@ -88,7 +88,7 @@ func main() {
 	r.POST("/api/forgot", handleForgot(d))
 	r.POST("/api/reset", handleReset(d))
 	api := r.Group(apiRoute)
-	//api.Use(jwtFilter(d))
+	api.Use(jwtFilter(d))
 	{
 		post := api.Group("/post")
 		{
