@@ -1,0 +1,53 @@
+{{ define "content" }}
+<div class="container">
+    <form onsubmit="event.preventDefault(); forgot();">
+        <div class="field">
+            <p class="control has-icons-left">
+                <input id="user" class="input is-large" type="text" placeholder="Username">
+                    <span class="icon is-small is-left">
+                        <i class="fa fa-user"></i>
+                    </span>
+                </input>
+            </p>
+        </div>
+        <p id="error" class="help is-danger hidden">There was an error handling your request, please try again later or contact the administrator.</p>
+        <div class="field is-grouped is-grouped-right">
+            <p class="control">
+            <button class="button is-success is-large" type="submit">
+                Submit
+            </button>
+            </p>
+        </div>
+    </form>
+    <div id="success" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <article class="message is-success">
+                <div class="message-header">
+                    <p>Success</p>
+                </div>
+                <div class="message-body">
+                    Your request has been successfully received. Please check your e-mail for further instructions.<br>
+                    <a href="/admin/login">Back to login.</a>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+    function forgot() {
+        $.ajax({
+            url: "/api/forgot",
+            type: "post",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            data: JSON.stringify({user: $("#user").val()}),
+            success: function(response) { $("#success").addClass("is-active"); },
+            error: function(response) { $("#user").addClass("is-danger"); $("#error").removeClass("hidden");}
+        });
+    }
+</script>
+{{ end }}
+{{ define "title" }}Forgot your password?{{end}}

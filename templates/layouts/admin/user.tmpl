@@ -1,0 +1,57 @@
+{{ define "content" }}
+<div class="tile is-child box">
+    <form id="user-form">
+        {{ if .eUser }}
+            <input style="display:none;" type="checkbox" id="user-deleted" name="user-deleted" checked="{{.eUser.Deleted}}"/>
+            <input style="display:none;" type="number" id="user-id" name="user-id" value="{{.eUser.Num}}"/>
+        {{ end }}
+        <div class="field">
+            <label class="label" for="user-name">Name</label>
+            <input class="input" type="text" id="user-name" name="user-name" {{ if .eUser }}value="{{.eUser.Name}}"{{ end }}></input>
+        </div>
+        <div class="field">
+            <label class="label" for="user-email">Email</label>
+            <input class="input" type="text" id="user-email" name="user-email" {{ if .eUser }}value="{{.eUser.Email}}"{{ end }}></input>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button id="user-form-submit" class="button is-primary full-width">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+    safeParseInt = function(str) {
+        var val = parseInt(str);
+        if (val > 0) {
+            return val;
+        }
+    }
+    $(document).ready(function() {
+        $('#user-form-submit').one('click', function(event) {
+            event.preventDefault();
+            $(this).prop('disabled', true);
+            $(this).addClass('is-loading');
+            var user = {}
+            user.num = safeParseInt($("#user-id").val());
+            user.deleted = $("#user-deleted").prop('checked');
+            user.username = $("#user-name").val();
+            user.email = $("#user-email").val();
+            //FIXME:failure
+            var options = {
+                url : "/api/user/"+user.num,
+                dataType: "json",
+                data: JSON.stringify(user),
+                contentType: "application/json;charset=utf-8",
+                method: "post",
+                success: function() {window.location="/admin/users"},
+            };
+            console.log(user);
+
+            $.ajax(options);
+        });
+    });
+</script>
+{{ end }}

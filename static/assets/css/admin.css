@@ -31,7 +31,7 @@ a .icon {
 
 .auto-columns {
     display: grid;
-    width: auto;
+    width: 100%;
     grid-template-areas: "a a a";
     grid-auto-columns: 33%;
     grid-gap: 1%;
@@ -39,5 +39,27 @@ a .icon {
 
 .auto-column {
     height: 100%;
+    width:100%;
 }
 
+.hidden {
+    display: none;
+}
+
+.card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-footer {
+    margin-top: auto;
+}
+
+.tags-always-height {
+    min-height: 1.5em;
+}
+
+.is-giant {
+    font-size: 3rem;
+}

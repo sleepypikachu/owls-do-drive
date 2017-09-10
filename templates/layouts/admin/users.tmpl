@@ -1,0 +1,50 @@
+{{ define "content" }}
+<div class="auto-columns">
+    {{ range .users }}
+        <div class="auto-column">
+            <div class="card">
+                <div class="card-content">
+                    <div class="media-content">
+                        <p class="title is-4">
+                            <a href="/admin/users/{{.Num}}">{{ .Name }}</a>
+                        </p>
+                        <p class="subtitle is-6">{{ .Email }}</p>
+                    </div>
+                </div>
+                <div class="content tags tags-always-height">
+                    {{ if .Deleted }}
+                        <span class="tag is-danger">deleted</span>
+                    {{ end }}
+                </div>
+                <div class="card-footer">
+                    <a class="card-footer-item" title="edit" href="/admin/users/{{ .Num }}"><span class="icon"><span class="fa fa-pencil"/></span></a>
+                    {{ if .Deleted }}
+                    <a class="card-footer-item" title="restore" onclick="restoreUser({{.Num}})"><span class="icon"><span class="fa fa-undo"/></span></a>
+                    {{ else }}
+                    <a class="card-footer-item" title="delete" onclick="deleteUser({{.Num}})"><span class="icon"><span class="fa fa-trash"/></span></a>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
+    {{ end }}
+    <div class="card">
+        <div class="card-content">
+            <a class="button is-giant is-primary" href="/admin/users/"><span class="icon"><i class="fa fa-user-plus is-giant"></i></span></a>
+        </div>
+    </div>
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+    var methodPost = function(id, method) {
+        $.ajax({
+            url: "/api/user/"+id,
+            method: method,
+            success: function() {window.location.reload()}
+        });
+    }
+
+    var deleteUser = function(id) {methodPost(id, "DELETE");}
+    var restoreUser = function(id) {methodPost(id+"/restore", "POST");}
+</script>
+{{ end }}

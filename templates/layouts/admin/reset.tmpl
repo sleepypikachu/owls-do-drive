@@ -1,0 +1,54 @@
+{{ define "title" }}Reset your password{{end}}
+{{ define "content" }}
+<div class="container">
+    <form onsubmit="event.preventDefault(); reset();">
+        <div class="field">
+            <p class="control has-icons-left">
+                <input id="user" class="input is-large" type="text" placeholder="Username">
+                <span class="icon is-small is-left">
+                    <i class="fa fa-user"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input id="token" class="input is-large" type="text" placeholder="Reset Token">
+                <span class="icon is-small is-left">
+                    <i class="fa fa-key"></i>
+                </span>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input id="password" class="input is-large" type="password" placeholder="New Password">
+            <span class="icon is-small is-left">
+                <i class="fa fa-asterisk"></i>
+            </span>
+            </p>
+        </div>
+        <p id="error" class="help is-danger hidden">Username or token invalid.</p>
+        <div class="field is-grouped is-grouped-right">
+            <p class="control">
+            <button class="button is-success is-large" type="submit">
+                Submit
+            </button>
+            </p>
+        </div>
+    </form>
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+    function reset() {
+        $.ajax({
+            url: "/api/reset",
+            type: "post",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            data: JSON.stringify({user: $("#user").val(), token: $("#token").val(), password: $("#password").val()}),
+            success: function(response) { document.cookie = "jwt="+response.jwt+"; path=/"; window.location = "/admin"; },
+            error: function(response) { $("#user").addClass("is-danger"); $("#token").addClass("is-danger"); $("#error").removeClass("hidden");}
+        });
+    }
+</script>
+{{ end }}

@@ -12,6 +12,11 @@
         <script src="https://unpkg.com/flatpickr"></script>
         <script src="/assets/js/jquery-3.2.1.min.js"></script>
         <script src="http://malsup.github.com/jquery.form.js"></script> 
+        <script type="text/javascript">
+            function logout() {
+                document.cookie="";
+            }
+        </script>
         {{ template "headers" . }}
     </head>
     <body>
@@ -26,17 +31,23 @@
             </div>
             <div class="level-right">
                 <span class="level-item">
+                    {{ template "title" }}
+                </span>
+            {{ if .User }}
+                <span class="level-item">
                     Hello, {{.User.Name}}!
                 </span>
                 <span class="level-item">
-                    <a href="/" class="button">Logout</a>
+                    <a href="/admin/login" class="button" onclick="logout()">Logout</a>
                 </span>
+            {{ end }}
             </div>
         </div>
         <hr>
 
         <div class="tile is-ancestor content">
 
+            {{ if .User }}
             <!-- Side Nav -->
             <div class="tile is-2 is-parent is-vertical side-nav">
                 <a href="/admin/" id="button-upload" class="tile is-child button">
@@ -51,18 +62,28 @@
                     <span class="icon"><span class="fa fa-line-chart"></span></span>
                     <span>Analytics</span>
                 </a>
+                <a href="/admin/users" id="button-users" class="tile is-child button">
+                    <span class="icon"><span class="fa fa-users"></span></span>
+                    <span>Users</span>
+                </a>
             </div>
+            {{ end }}
 
             <!-- Main Content -->
-            <div class="tile is-parent is-10">
+            <div class="tile is-parent">
                 {{ template "content" . }}
             </div>
         </div>
         <!-- Page Selector -->
         <script type="text/javascript">
-document.getElementById("{{ template "button-id" . }}").classList.add("is-primary")
+buttonId = "{{ template "button-id" . }}";
+if (buttonId) {
+    document.getElementById(buttonId).classList.add("is-primary");
+}
         </script>
     </body>
 </html>
 {{ end }}
 {{ define "headers" }}{{end}}
+{{ define "button-id" }}{{end}}
+{{ define "title" }}{{end}}

@@ -41,12 +41,14 @@
     </div>
     <figure id="preview" class="tile is-child wide-nav has-text-centered image-preview">{{ if .Post }}<img src="/data/{{ .Post.Image }}"/>{{else}}<h2>Image Preview...</h2>{{end}}</figure>
 </div>
+    <!--FIXME: should this be here or in the headers? -->
     <script type="text/javascript">
         $(document).ready(function() {
             $('#post-form-submit').one('click', function(event) {
                 event.preventDefault();
                 $(this).prop('disabled', true);
                 $(this).addClass('is-loading');
+                //FIXME:errors
                 var options = {
                     success: function() {window.location="/admin/archive"},
                 }

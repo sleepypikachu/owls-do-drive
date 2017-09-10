@@ -3,11 +3,6 @@
     {{ range .posts }}
     <div class="auto-column">
         <div class="card">
-            <div class="card-image">
-                <figure class="image">
-                    <img src="/data/{{ .Image }}" alt="{{ .Title }} Image">
-                </figure>
-            </div>
             <div class="card-content">
                 <div class="media">
                     <div class="media-content">
@@ -16,16 +11,19 @@
                     </div>
                 </div>
             </div>
+            <div class="card-image">
+                <figure class="image">
+                    <img src="/data/{{ .Image }}" alt="{{ .Title }} Image">
+                </figure>
+            </div>
             <div class="content">
-                <div>
+                <small>{{ .Posted | prettyTime }}</small>
                 {{ if .Deleted }}
                     <span class="tag is-danger">deleted</span>
                 {{ end }}
                 {{ if .Posted | scheduled }}
                     <span class="tag is-warning">scheduled</span>
                 {{ end }}
-                </div>
-                <small>{{ .Posted | prettyTime }}</small>
             </div>
             <div class="card-footer">
                 <a class="card-footer-item" title="edit" href="/admin/post/{{ .Num }}"><span class="icon"><span class="fa fa-pencil"/></span></a>
@@ -43,6 +41,7 @@
 {{ define "headers" }}
 <script type="text/javascript">
     var methodPost = function(id, method) {
+        //FIXME:failure
         $.ajax({
             url: "/api/post/"+id,
             method: method,

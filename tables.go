@@ -12,7 +12,9 @@ type Post struct {
 }
 
 type User struct {
+	Num      int    `json:"num"`
 	Name     string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"-"`
-	Deleted  bool   `json"-"`
+	Deleted  bool   `json:"deleted"`
 }

@@ -1,0 +1,48 @@
+{{ define "content" }}
+<div class="container">
+    <form onsubmit="event.preventDefault(); login();">
+        <div class="field">
+            <p class="control has-icons-left">
+            <input id="user" class="input is-large" type="text" placeholder="Username">
+            <span class="icon is-small is-left">
+                <i class="fa fa-user"></i>
+            </span>
+            </input>
+            </p>
+        </div>
+        <div class="field">
+            <p class="control has-icons-left">
+            <input id="password" class="input is-large" type="password" placeholder="Password">
+            <span class="icon is-small is-left">
+                <i class="fa fa-lock"></i>
+            </span>
+            </input>
+            </p>
+        </div>
+        <p id="login-error" class="help is-danger hidden">Username or password is incorrect. <a href="/admin/forgot">Did you forget your password?</a></p>
+        <div class="field is-grouped is-grouped-right">
+            <p class="control">
+            <button class="button is-success is-large" type="submit">
+                Login
+            </button>
+            </p>
+        </div>
+    </form>
+</div>
+{{ end }}
+{{ define "headers" }}
+<script type="text/javascript">
+function login() {
+    $.ajax({
+        url: "/api/token",
+        type: "post",
+        dataType: "json",
+        contentType: "application/json;charset=utf-8",
+        data: JSON.stringify({user: $("#user").val(), password: $("#password").val()}),
+        success: function(response) { document.cookie = "jwt="+response.jwt+"; path=/"; window.location = "/admin"; },
+        error: function(response) { $("#user").addClass("is-danger"); $("#password").addClass("is-danger"); $("#login-error").removeClass("hidden");}
+    });
+}
+</script>
+{{ end }}
+{{ define "title" }}Login{{end}}

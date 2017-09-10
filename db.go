@@ -1,5 +1,7 @@
 package main
 
+import "errors"
+
 type Datasource interface {
 	/* Posts */
 	Latest() *Post
@@ -12,14 +14,20 @@ type Datasource interface {
 	PrevNext(*Post) (*int, *int)
 
 	/* Users */
-	login(username string, password string) (*User, error)
-	changePassword(username string, newPassword string) error
-	create(User) error
+	Fetch(userId int) (*User, error)
+	FetchByName(username string) (*User, error)
+	Login(username string, password string) (*User, error)
+	ChangePassword(user *User, newPassword string) error
+	ResetPassword(user *User) (*string, error)
+	ChangePasswordWithToken(user *User, newPassword string, token string) error
+	Create(*User) error
+	Update(*User) error
+	List() *[]User
 }
 
-type dummyDatasource struct {
-	name string
-}
+var ErrUniqueConstraint = errors.New("sql: duplicate key value violates unique constraint")
+
+type dummyDatasource struct{}
 
 func (d dummyDatasource) Latest() *Post {
 	return &Post{Num: 1, Title: "Sample Post", Alt: "Sample", Image: "goat_toon.jpg"}
@@ -51,21 +59,45 @@ func (d dummyDatasource) Restore(*Post) error {
 	return nil
 }
 
-func (d dummyDatasource) login(username string, password string) (*User, error) {
-	return &User{d.name, "foo", false}, nil
+func (d dummyDatasource) Login(username string, password string) (*User, error) {
+	return &User{1, "dummy", "dummy@dummy.net", "foo", false}, nil
 }
 
-func (d dummyDatasource) changePassword(username string, newPassword string) error {
+func (d dummyDatasource) Fetch(userId int) (*User, error) {
+	return d.Login("", "")
+}
+
+func (d dummyDatasource) ChangePassword(user *User, newPassword string) error {
 	return nil
 }
 
-func (d dummyDatasource) create(u User) error {
-	d.name = u.Name
+func (d dummyDatasource) FetchByName(username string) (*User, error) {
+	return nil, nil
+}
+
+func (d dummyDatasource) ResetPassword(user *User) (*string, error) {
+	return nil, nil
+}
+
+func (d dummyDatasource) ChangePasswordWithToken(user *User, newPassword string, token string) error {
+	return nil
+}
+
+func (d dummyDatasource) Create(u *User) error {
+	return nil
+}
+
+func (d dummyDatasource) Update(u *User) error {
 	return nil
 }
 
 func (d dummyDatasource) PrevNext(p *Post) (*int, *int) {
 	return nil, nil
+}
+
+func (d dummyDatasource) List() *[]User {
+	var list = make([]User, 0)
+	return &list
 }
 
 func DummyDatasource() Datasource {
