@@ -28,6 +28,7 @@
         if (val > 0) {
             return val;
         }
+        return "";
     }
     $(document).ready(function() {
         $('#user-form-submit').one('click', function(event) {
@@ -35,8 +36,11 @@
             $(this).prop('disabled', true);
             $(this).addClass('is-loading');
             var user = {}
-            user.num = safeParseInt($("#user-id").val());
-            user.deleted = $("#user-deleted").prop('checked');
+            var x = safeParseInt($("#user-id").val());
+            if (x != "") {
+                user.num = x;
+            }
+            user.deleted = $("#user-deleted").val() == "on";
             user.username = $("#user-name").val();
             user.email = $("#user-email").val();
             //FIXME:failure

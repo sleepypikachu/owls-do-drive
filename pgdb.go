@@ -235,7 +235,7 @@ func (d pgDatasource) ChangePasswordWithToken(user *User, newPassword string, to
 
 	hashedToken := hash(token, salt)
 
-	result, err := tx.Exec("UPDATE password_resets SET used = true WHERE num = $1 AND reset_token = $2", num, hashedToken)
+	result, err := tx.Exec("UPDATE password_resets SET used = TRUE WHERE num = $1 AND reset_token = $2", num, hashedToken)
 	tx.Commit()
 
 	if err != nil {

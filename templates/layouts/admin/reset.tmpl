@@ -1,7 +1,7 @@
 {{ define "title" }}Reset your password{{end}}
 {{ define "content" }}
 <div class="container">
-    <form onsubmit="event.preventDefault(); reset();">
+    <form onsubmit="event.preventDefault(); resetUser();">
         <div class="field">
             <p class="control has-icons-left">
                 <input id="user" class="input is-large" type="text" placeholder="Username">
@@ -39,7 +39,7 @@
 {{ end }}
 {{ define "headers" }}
 <script type="text/javascript">
-    function reset() {
+    function resetUser() {
         $.ajax({
             url: "/api/reset",
             type: "post",

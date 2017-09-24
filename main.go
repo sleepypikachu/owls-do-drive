@@ -8,6 +8,7 @@ import "github.com/gin-gonic/gin"
 import "github.com/google/uuid"
 import "html/template"
 import "net/http"
+import "net/smtp"
 import "net/url"
 import "path/filepath"
 import "strconv"
@@ -30,12 +31,20 @@ type Environment struct {
 	Develop bool
 }
 
+type SmtpConf struct {
+	Address  string
+	Port     int
+	Email    string
+	Password string
+}
+
 type OddClaims struct {
 	User string `json:"user"`
 	jwt.StandardClaims
 }
 
 var location Location
+var smtpConf SmtpConf
 var jwtKey = []byte(uuid.New().String())
 
 func main() {
@@ -48,6 +57,7 @@ func main() {
 		}
 		Location    Location
 		Environment Environment
+		Smtp        SmtpConf
 	}{}
 
 	err := gcfg.ReadFileInto(&cfg, "./odd.cfg")
@@ -58,6 +68,7 @@ func main() {
 
 	d := PgDatasource(cfg.Database.User, cfg.Database.Name, cfg.Environment.Develop)
 	location = cfg.Location
+	smtpConf = cfg.Smtp
 
 	defaultUser(d)
 
@@ -81,7 +92,8 @@ func main() {
 		admin.GET("/archive", renderAdminArchive(d))
 		admin.GET("/post/:"+numPathParam, renderEditPost(d))
 		admin.GET("/users", renderUsers(d))
-		admin.GET("/users/:"+numPathParam, renderEditUser(d))
+		admin.GET("/user/", renderNewUser())
+		admin.GET("/user/:"+numPathParam, renderEditUser(d))
 	}
 
 	r.POST("/api/token", getTokenHandler(d))
@@ -102,6 +114,7 @@ func main() {
 		{
 			user.DELETE("/:"+numPathParam, handleDeleteUser(d))
 			user.POST("/:"+numPathParam, handleEditUser(d))
+			user.POST("/", handleNewUser(d))
 			user.POST("/:"+numPathParam+"/restore", handleRestoreUser(d))
 		}
 	}
@@ -392,6 +405,17 @@ func renderEditUser(d Datasource) gin.HandlerFunc {
 	}
 }
 
+func renderNewUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//TODO de-duplicate this into a function which takes Context and H and returns an H
+		user, _ := c.Get(contextKeyUser)
+		c.HTML(http.StatusOK, "user.tmpl", gin.H{
+			"User": gin.H{"Name": user},
+		})
+
+	}
+}
+
 func handleNewPost(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		post := Post{}
@@ -493,6 +517,20 @@ func handleEditUser(d Datasource) gin.HandlerFunc {
 		u := User{}
 		c.BindJSON(&u)
 		err := d.Update(&u)
+		if err != nil {
+			log.Print(err)
+			c.JSON(http.StatusBadRequest, gin.H{})
+		} else {
+			c.JSON(http.StatusOK, gin.H{})
+		}
+	}
+}
+
+func handleNewUser(d Datasource) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := User{}
+		c.BindJSON(&u)
+		err := d.Create(&u)
 		if err != nil {
 			log.Print(err)
 			c.JSON(http.StatusBadRequest, gin.H{})
@@ -717,7 +755,10 @@ func handleForgot(d Datasource) gin.HandlerFunc {
 			if err != nil {
 				log.Print(err)
 			} else {
-				mailToken(*token, u.Email)
+				err := mailToken(*token, u.Email)
+				if err != nil {
+					log.Print(err)
+				}
 			}
 		}
 
@@ -768,8 +809,19 @@ func handleReset(d Datasource) gin.HandlerFunc {
 
 func mailToken(token string, email string) error {
 	//TODO: send mail
+	//TODO: debounce to avoid spam
+	//TODO:there must be a package to do this in a general way.
 	log.Printf("Would mail %s: %s", email, token)
-	return nil
+	auth := smtp.PlainAuth("", smtpConf.Email, smtpConf.Password, smtpConf.Address)
+	to := []string{email}
+	msg := []byte("To: " + email + "\r\n" +
+		"Subject: Forgotten Password\r\n" +
+		"From: " + smtpConf.Email + "\r\n" +
+		"\r\n" +
+		"Please reset your password here: " + location.Protocol + location.Domain + "/admin/reset/\r\n" +
+		"With token: " + token)
+	err := smtp.SendMail(smtpConf.Address+":"+strconv.Itoa(smtpConf.Port), auth, smtpConf.Email, to, msg)
+	return err
 }
 
 func jwtFilter(d Datasource) gin.HandlerFunc {

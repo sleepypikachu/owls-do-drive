@@ -1,3 +1,14 @@
 [database]
     user=user
     name=odd
+[location]
+    domain=localhot:8080
+    protocol="http://"
+[environment]
+    develop=false
+[smtp]
+    address=smtp.example.com
+    port=25
+    email=forgot@example.com
+    password=SECRETPASSWORD
+

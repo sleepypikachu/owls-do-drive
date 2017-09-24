@@ -6,7 +6,7 @@
                 <div class="card-content">
                     <div class="media-content">
                         <p class="title is-4">
-                            <a href="/admin/users/{{.Num}}">{{ .Name }}</a>
+                            <a href="/admin/user/{{.Num}}">{{ .Name }}</a>
                         </p>
                         <p class="subtitle is-6">{{ .Email }}</p>
                     </div>
@@ -17,7 +17,7 @@
                     {{ end }}
                 </div>
                 <div class="card-footer">
-                    <a class="card-footer-item" title="edit" href="/admin/users/{{ .Num }}"><span class="icon"><span class="fa fa-pencil"/></span></a>
+                    <a class="card-footer-item" title="edit" href="/admin/user/{{ .Num }}"><span class="icon"><span class="fa fa-pencil"/></span></a>
                     {{ if .Deleted }}
                     <a class="card-footer-item" title="restore" onclick="restoreUser({{.Num}})"><span class="icon"><span class="fa fa-undo"/></span></a>
                     {{ else }}
@@ -29,7 +29,7 @@
     {{ end }}
     <div class="card">
         <div class="card-content">
-            <a class="button is-giant is-primary" href="/admin/users/"><span class="icon"><i class="fa fa-user-plus is-giant"></i></span></a>
+            <a class="button is-giant is-primary" href="/admin/user/"><span class="icon"><i class="fa fa-user-plus is-giant"></i></span></a>
         </div>
     </div>
 </div>
