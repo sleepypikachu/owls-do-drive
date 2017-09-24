@@ -129,7 +129,12 @@ func main() {
 			c.HTML(http.StatusNotFound, "error.tmpl", gin.H{})
 		}
 	})
-	r.Run()
+	if cfg.Environment.Develop {
+		r.Run()
+	} else {
+		//TODO:run on cfg.Environment.Port
+		r.Run(":80")
+	}
 }
 
 func defaultUser(d Datasource) {
