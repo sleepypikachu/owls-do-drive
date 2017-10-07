@@ -119,7 +119,17 @@ func main() {
 		}
 	}
 
-	r.NoRoute(func(c *gin.Context) {
+	r.NoRoute(noRoute())
+	if cfg.Environment.Develop {
+		r.Run()
+	} else {
+		//TODO:run on cfg.Environment.Port
+		r.Run(":80")
+	}
+}
+
+func noRoute() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		if strings.HasPrefix(path, apiRoute) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -128,12 +138,6 @@ func main() {
 		} else {
 			c.HTML(http.StatusNotFound, "error.tmpl", gin.H{})
 		}
-	})
-	if cfg.Environment.Develop {
-		r.Run()
-	} else {
-		//TODO:run on cfg.Environment.Port
-		r.Run(":80")
 	}
 }
 
@@ -273,14 +277,22 @@ func renderToon(p *Post, d Datasource) gin.HandlerFunc {
 func randomToon(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := d.Random()
-		c.Redirect(http.StatusFound, "/post/"+strconv.Itoa(p.Num))
+		if p != nil {
+			c.Redirect(http.StatusFound, "/post/"+strconv.Itoa(p.Num))
+		} else {
+			noRoute()(c)
+		}
 	}
 }
 
 func latestToon(d Datasource) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := d.Latest()
-		c.Redirect(http.StatusFound, "/post/"+strconv.Itoa(p.Num))
+		if p != nil {
+			c.Redirect(http.StatusFound, "/post/"+strconv.Itoa(p.Num))
+		} else {
+			noRoute()(c)
+		}
 	}
 }
 
