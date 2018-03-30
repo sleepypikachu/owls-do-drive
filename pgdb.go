@@ -226,7 +226,7 @@ func (d pgDatasource) ChangePasswordWithToken(user *User, newPassword string, to
 		return err
 	}
 
-	err = tx.QueryRow("SELECT num, salt FROM password_resets ORDER BY num DESC WHERE for_user = $1 AND NOT used AND current_timestamp < not_after", user.Num).Scan(&num, &salt)
+	err = tx.QueryRow("SELECT num, salt FROM password_resets WHERE for_user = $1 AND NOT used AND current_timestamp < not_after ORDER BY num DESC", user.Num).Scan(&num, &salt)
 
 	if err != nil {
 		tx.Commit()
