@@ -43,9 +43,13 @@
             user.deleted = $("#user-deleted").val() == "on";
             user.username = $("#user-name").val();
             user.email = $("#user-email").val();
+            var userUrl = "/api/user/";
+            if (user.num) {
+                userUrl += user.num;
+            }
             //FIXME:failure
             var options = {
-                url : "/api/user/"+user.num,
+                url : userUrl,
                 dataType: "json",
                 data: JSON.stringify(user),
                 contentType: "application/json;charset=utf-8",
