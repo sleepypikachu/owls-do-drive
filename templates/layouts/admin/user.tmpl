@@ -2,7 +2,7 @@
 <div class="tile is-child box">
     <form id="user-form">
         {{ if .eUser }}
-            <input style="display:none;" type="checkbox" id="user-deleted" name="user-deleted" checked="{{.eUser.Deleted}}"/>
+            <input style="display:none;" type="checkbox" id="user-deleted" name="user-deleted" {{ if .eUser.Deleted }}checked{{ end }}/>
             <input style="display:none;" type="number" id="user-id" name="user-id" value="{{.eUser.Num}}"/>
         {{ end }}
         <div class="field">
@@ -40,7 +40,7 @@
             if (x != "") {
                 user.num = x;
             }
-            user.deleted = $("#user-deleted").val() == "on";
+            user.deleted = document.getElementById("user-deleted").checked;
             user.username = $("#user-name").val();
             user.email = $("#user-email").val();
             var userUrl = "/api/user/";
