@@ -10,6 +10,7 @@ import "html/template"
 import "net/http"
 import "net/smtp"
 import "net/url"
+import "os"
 import "path/filepath"
 import "strconv"
 import "strings"
@@ -28,7 +29,10 @@ type Location struct {
 }
 
 type Environment struct {
-	Develop bool
+	Develop        bool
+	StaticDataDir  string
+	StaticAssetDir string
+	TemplateDir    string
 }
 
 type SmtpConf struct {
@@ -73,9 +77,30 @@ func main() {
 	defaultUser(d)
 
 	r := gin.Default()
-	r.HTMLRender = makeMultiRenderer("./templates/")
-	r.Static("/assets", "static/assets")
-	r.Static("/data", "static/data")
+	r.HTMLRender = makeMultiRenderer(cfg.Environment.TemplateDir)
+
+	absAssets, err := filepath.Abs(cfg.Environment.StaticAssetDir)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(absAssets, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	r.Static("/assets", absAssets)
+
+	absData, err := filepath.Abs(cfg.Environment.StaticDataDir)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(absData, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	r.Static("/data", absData)
+
 	r.GET("/", latestToon(d))
 	r.GET("/post/:"+numPathParam, renderById(d))
 	r.GET("/random", randomToon(d))
@@ -172,7 +197,14 @@ func defaultUser(d Datasource) {
 func makeMultiRenderer(templatesDir string) multitemplate.Render {
 	r := multitemplate.New()
 
-	layouts, err := filepath.Glob(templatesDir + "layouts/*")
+	abs, err := filepath.Abs(templatesDir)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	log.Printf(abs)
+
+	layouts, err := filepath.Glob(abs + "/layouts/*")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -243,7 +275,7 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 			panic(err.Error())
 		}
 		for _, implement := range implements {
-			templateName := templatesDir + "includes/" + filepath.Base(layout) + ".tmpl"
+			templateName := abs + "/includes/" + filepath.Base(layout) + ".tmpl"
 			files := []string{templateName, implement}
 			t := template.Must(template.New(filepath.Base(layout) + ".tmpl").Funcs(funcs).ParseFiles(files...))
 			r.Add(filepath.Base(implement), t)

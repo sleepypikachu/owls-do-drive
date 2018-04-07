@@ -6,6 +6,9 @@
     protocol="http://"
 [environment]
     develop=false
+    static_data_dir=static/data
+    static_asset_dir=static/assets
+    template_dir=templates
 [smtp]
     address=smtp.example.com
     port=25
