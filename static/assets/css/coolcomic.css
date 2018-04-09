@@ -60,3 +60,28 @@ a.navbar-item:hover {
     margin-left: auto;
     margin-right: auto;
 }
+
+.share-button svg{
+    color: white;
+    fill: white;
+}
+
+.share-button span{
+    color: white;
+}
+
+.reddit {
+    background-color: #ff4500;
+}
+
+.facebook {
+    background-color: #4267b2;
+}
+
+.twitter {
+    background-color: #1da1f2;
+}
+
+.tumblr {
+    background-color: #314358;
+}

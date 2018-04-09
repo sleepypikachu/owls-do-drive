@@ -21,7 +21,7 @@
                         <h1 class="title ">
                             {{ name }}
                         </h1>
-                        <img class="svg " alt="{{ name }}" src="/assets/img/logo.svg">
+                        <img class="svg is-hidden-mobile" alt="{{ name }}" src="/assets/img/logo.svg">
                     </div>
                 </div>
             </div>
@@ -37,6 +37,11 @@
         <!-- Content -->
         <section class="primary-content">
             {{ template "content" . }}
+        </section>
+
+        <!-- Footer -->
+        <section class="secondary-content">
+            {{ template "footer" . }}
         </section>
 
         <footer class="footer is-fixed-bottom">
