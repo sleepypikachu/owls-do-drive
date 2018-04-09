@@ -2,7 +2,7 @@
     user=user
     name=odd
 [location]
-    domain=localhot:8080
+    domain=localhost:8080
     protocol="http://"
 [environment]
     develop=false
