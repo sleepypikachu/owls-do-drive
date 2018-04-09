@@ -1,7 +1,14 @@
 {{ define "content" }}
-<div class="content">
-    {{ range .posts }}
-    <h2><a href="/post/{{ .Num }}">{{ .Title }}</a></h2>
-    {{ end }}
+<div class="container">
+    <div class="auto-columns">
+        {{ range .posts }}
+        <div class="auto-column spaced centered">
+            <a href="/post/{{ .Num }}">
+                <h2>{{ .Title }}</h2>
+            </a>
+            <small>{{ .Posted | prettyDate }}</small>
+        </div>
+        {{ end }}
+    </div>
 </div>
 {{ end }}

@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Owl's Don't Dance - Admin Console</title>
+        <title>{{ name }} - Admin Console</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.css">
         <link rel="stylesheet" href="/assets/css/admin.css">
         <script src="https://use.fontawesome.com/0c6533fe9f.js"></script>
@@ -24,10 +24,7 @@
         <!-- Wide Nav -->
         <div class="level wide-nav">
             <div class="level-left">
-                <figure class="level-item header-image">
-                    <img src="/assets/nav/topowl.png" alt="Orville"/>
-                </figure>
-                <span class="level-item">Odd Cartoons Admin Page</span>
+                <span class="level-item">{{ name }} Admin Console</span>
             </div>
             <div class="level-right">
                 <span class="level-item">
@@ -57,10 +54,6 @@
                 <a href="/admin/archive/" id="button-archive" class="tile is-child button">
                     <span class="icon"><span class="fa fa-history"></span></span>
                     <span>Archive</span>
-                </a>
-                <a id="button-analytics" class="tile is-child button">
-                    <span class="icon"><span class="fa fa-line-chart"></span></span>
-                    <span>Analytics</span>
                 </a>
                 <a href="/admin/users" id="button-users" class="tile is-child button">
                     <span class="icon"><span class="fa fa-users"></span></span>

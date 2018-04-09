@@ -42,6 +42,26 @@ type SmtpConf struct {
 	Password string
 }
 
+type Database struct {
+	User string
+	Pass string
+	Url  string
+	Name string
+}
+
+type Publication struct {
+	Name      string
+	Publisher string
+}
+
+type Cfg struct {
+	Database    Database
+	Location    Location
+	Environment Environment
+	Smtp        SmtpConf
+	Publication Publication
+}
+
 type OddClaims struct {
 	User string `json:"user"`
 	jwt.StandardClaims
@@ -52,17 +72,7 @@ var smtpConf SmtpConf
 var jwtKey = []byte(uuid.New().String())
 
 func main() {
-	cfg := struct {
-		Database struct {
-			User string
-			Pass string
-			Url  string
-			Name string
-		}
-		Location    Location
-		Environment Environment
-		Smtp        SmtpConf
-	}{}
+	cfg := Cfg{}
 
 	err := gcfg.ReadFileInto(&cfg, "./odd.cfg")
 
@@ -77,7 +87,7 @@ func main() {
 	defaultUser(d)
 
 	r := gin.Default()
-	r.HTMLRender = makeMultiRenderer(cfg.Environment.TemplateDir)
+	r.HTMLRender = makeMultiRenderer(cfg)
 
 	absAssets, err := filepath.Abs(cfg.Environment.StaticAssetDir)
 	if err != nil {
@@ -194,15 +204,16 @@ func defaultUser(d Datasource) {
 	}
 }
 
-func makeMultiRenderer(templatesDir string) multitemplate.Render {
+func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 	r := multitemplate.New()
+	templatesDir := cfg.Environment.TemplateDir
+	name := cfg.Publication.Name
+	publisher := cfg.Publication.Publisher
 
 	abs, err := filepath.Abs(templatesDir)
 	if err != nil {
 		panic(err.Error())
 	}
-
-	log.Printf(abs)
 
 	layouts, err := filepath.Glob(abs + "/layouts/*")
 	if err != nil {
@@ -211,6 +222,10 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 
 	prettyTime := func(t time.Time) string {
 		return t.Format("Monday 2 Jan 2006 15:04")
+	}
+
+	prettyDate := func(t time.Time) string {
+		return t.Format("Monday 2 Jan 2006")
 	}
 
 	scheduled := func(t time.Time) bool {
@@ -237,7 +252,7 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 
 	twitter := func(p Post) string {
 		v := make(url.Values)
-		v.Add("text", "Check out "+p.Title+" from Owls Don't Dance!")
+		v.Add("text", "Check out "+p.Title+" from "+name+"!")
 		v.Add("url", canonical(p))
 		return "https://twitter.com/intent/tweet" + v.Encode()
 	}
@@ -259,6 +274,7 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 
 	funcs := template.FuncMap{
 		"prettyTime": prettyTime,
+		"prettyDate": prettyDate,
 		"scheduled":  scheduled,
 		"unixTime":   unixTime,
 		"url":        canonical,
@@ -267,6 +283,8 @@ func makeMultiRenderer(templatesDir string) multitemplate.Render {
 		"reddit":     reddit,
 		"tumblr":     tumblr,
 		"image":      image,
+		"name":       func() string { return name },
+		"publisher":  func() string { return publisher },
 	}
 
 	for _, layout := range layouts {

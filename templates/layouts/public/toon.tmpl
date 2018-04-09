@@ -2,13 +2,13 @@
 <meta property="og:url" content="{{ .post | url }}"/>
 <meta property="og:title" content="{{ .post.Title }}"/>
 <meta property="og:image" content="{{ .post.Image }}"/>
-<meta property="og:description" content="Check out {{ .post.Title }} by Lauren Dunlop on Owl's Don't Dance"/>
+<meta property="og:description" content="Check out {{ .post.Title }} by {{ publisher }} on {{ name }}"/>
 {{ end }}
 {{ define "content" }}
 <!-- Random -->
-<div class="tile is-1 level">
+<div class="level">
     <a href="/random" class="level-item has-text-centered" title='Random'>
-        <img class="link svg" alt='Random' src="/assets/nav/random.svg"/>
+        Random
     </a>
 </div>
 <div class="tile is-parent">
@@ -18,9 +18,13 @@
             {{ if .prev }}
                 <a href="/post/{{ .prev }}">
                 <figure class="level-item">
-                    <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
+                    &lt;
                 </figure>
             </a>
+            {{ else }}
+                <figure class="level-item">
+                    &lt;
+                </figure>
             {{ end }}
         </div>
     </div>
@@ -41,12 +45,12 @@
             {{ if .next }}
             <a href="/post/{{ .next }}">
                 <figure class="level-item">
-                    <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+                    &gt;
                 </figure>
             </a>
             {{ else }}
             <figure class="level-item">
-                <img class="link" alt="New Cartoon on Mondays" src="/assets/nav/newtoon.png"/>
+                Last one, check back soon!
             </figure>
             {{ end }}
         </div>
@@ -60,12 +64,12 @@
         <figure class="level-item has-text-centered">
             {{ if .prev }}
             <a href="/post/{{ .prev }}">
-                <img class="svg link" alt="Left" src="/assets/nav/arrow-left.svg"/>
+                &lt;
             </a>
             {{ end }}
             {{ if .next }}
             <a href="/post/{{ .next }}">
-                <img class="svg link" alt="Right" src="/assets/nav/arrow-right.svg"/>
+                &gt;
             </a>
             {{ end }}
         </figure>
