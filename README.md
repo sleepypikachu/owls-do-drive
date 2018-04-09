@@ -28,5 +28,5 @@ If you want to play:
 ### Package for deployment
 It's possible to deploy this as a web app, [demo](https://beta.oddcartoons.com), but it's very handcrafted. Create service files and installer packages to allow the application to be deployed trivially.
 
-### Plug templates in
-There's one template, it's very specific to Owl's Don't Dance and it's hardcoded right into the repo. Extract this template and create a mechanism to allow easy drop-in of customised templates. Provide a more generic default template that could be used as a placeholder/for someone who doesn't want to deal with the front-end faff where they might only provide a logo and change some text headings.
+### Expand Template Plugins
+It's now possible to provide your own template and specify some key attributes about the publication in the config file but this is hardcoded into main.go. A better solution would be to provide a mechanism for template designers to access user defined information in their templates (probably a json/yaml file). This would allow paramaterised templates to be much more configurable.
