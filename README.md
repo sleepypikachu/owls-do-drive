@@ -28,8 +28,5 @@ If you want to play:
 ### Package for deployment
 It's possible to deploy this as a web app, [demo](https://beta.oddcartoons.com), but it's very handcrafted. Create service files and installer packages to allow the application to be deployed trivially.
 
-### Expand Template Plugins
-It's now possible to provide your own template and specify some key attributes about the publication in the config file but this is hardcoded into main.go. A better solution would be to provide a mechanism for template designers to access user defined information in their templates (probably a json/yaml file). This would allow paramaterised templates to be much more configurable.
-
 ### Improve error handling
 At the moment most errors at startup just cause panic. It would be better to log a more useful error and preserve the stack trace in a crash report for the user to provide.
