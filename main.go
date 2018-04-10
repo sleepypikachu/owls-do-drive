@@ -1,6 +1,8 @@
 package main
 
 import "encoding/binary"
+import "encoding/json"
+import "io/ioutil"
 import "fmt"
 import "github.com/dgrijalva/jwt-go"
 import "github.com/gin-contrib/multitemplate"
@@ -220,6 +222,22 @@ func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 		panic(err.Error())
 	}
 
+	var params map[string]string
+	paramJson := abs + "/params.json"
+	_, err = os.Stat(paramJson)
+
+	if err == nil {
+		raw, err := ioutil.ReadFile(abs + "/params.json")
+		if err != nil {
+			panic(err.Error())
+		}
+		json.Unmarshal(raw, &params)
+	}
+
+	param := func(k string) string {
+		return params[k]
+	}
+
 	prettyTime := func(t time.Time) string {
 		return t.Format("Monday 2 Jan 2006 15:04")
 	}
@@ -273,6 +291,7 @@ func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 	}
 
 	funcs := template.FuncMap{
+		"params":     param,
 		"prettyTime": prettyTime,
 		"prettyDate": prettyDate,
 		"scheduled":  scheduled,
