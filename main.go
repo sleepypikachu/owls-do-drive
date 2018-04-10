@@ -208,16 +208,17 @@ func defaultUser(d Datasource) {
 
 func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 	r := multitemplate.New()
+	adminTemplatesDir := "admin_templates"
 	templatesDir := cfg.Environment.TemplateDir
 	name := cfg.Publication.Name
 	publisher := cfg.Publication.Publisher
 
-	abs, err := filepath.Abs(templatesDir)
+	adminAbs, err := filepath.Abs(adminTemplatesDir)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	layouts, err := filepath.Glob(abs + "/layouts/*")
+	abs, err := filepath.Abs(templatesDir)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -305,7 +306,16 @@ func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 		"name":       func() string { return name },
 		"publisher":  func() string { return publisher },
 	}
+	compileLayouts(r, adminAbs, funcs)
+	compileLayouts(r, abs, funcs)
+	return r
+}
 
+func compileLayouts(r multitemplate.Render, abs string, funcs template.FuncMap) {
+	layouts, err := filepath.Glob(abs + "/layouts/*")
+	if err != nil {
+		panic(err.Error())
+	}
 	for _, layout := range layouts {
 		implements, err := filepath.Glob(layout + "/*.tmpl")
 		if err != nil {
@@ -319,7 +329,6 @@ func makeMultiRenderer(cfg Cfg) multitemplate.Render {
 			log.Printf("Added %s with basefile %s", implement, filepath.Base(layout)+".tmpl")
 		}
 	}
-	return r
 }
 
 func renderToon(p *Post, d Datasource) gin.HandlerFunc {
