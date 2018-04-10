@@ -1,12 +1,12 @@
 {{ define "content" }}
 <div class="container">
-    <div class="auto-columns">
+    <div class="tile is-ancestor">
         {{ range .posts }}
-        <div class="auto-column spaced centered">
+        <div class="tile spaced">
             <a href="/post/{{ .Num }}">
                 <h2>{{ .Title }}</h2>
+                <small>{{ .Posted | prettyDate }}</small>
             </a>
-            <small>{{ .Posted | prettyDate }}</small>
         </div>
         {{ end }}
     </div>

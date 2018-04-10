@@ -28,8 +28,12 @@
         </section>
         <hr>
         <!-- Nav -->
-        <nav id="navbar" role="navigation" aria-label="navigation" class="navbar is-hidden-mobile">
+        <nav id="navbar" role="navigation" aria-label="navigation" class="navbar">
             <div class="navbar-menu">
+                <a class="navbar-item" href="/">Home</a>
+                <a class="navbar-item" href="/archive">Archive</a>
+            </div>
+            <div class="navbar-dropdown">
                 <a class="navbar-item" href="/">Home</a>
                 <a class="navbar-item" href="/archive">Archive</a>
             </div>
@@ -46,7 +50,7 @@
 
         <footer class="footer is-fixed-bottom">
             <div class="container">
-                <strong>{{ name }}</strong> by {{ publisher }}.
+                <strong>{{ name }}</strong> by <a href="{{ "author_url" | params }}">{{ publisher }}</a>.
             </div>
         </footer>
     </body>
