@@ -894,10 +894,7 @@ func handleReset(d Datasource) gin.HandlerFunc {
 }
 
 func mailToken(token string, email string) error {
-	//TODO: send mail
 	//TODO: debounce to avoid spam
-	//TODO:there must be a package to do this in a general way.
-	log.Printf("Would mail %s: %s", email, token)
 	auth := smtp.PlainAuth("", smtpConf.Email, smtpConf.Password, smtpConf.Address)
 	to := []string{email}
 	msg := []byte("To: " + email + "\r\n" +
