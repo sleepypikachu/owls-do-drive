@@ -40,7 +40,8 @@
             if (x != "") {
                 user.num = x;
             }
-            user.deleted = document.getElementById("user-deleted").checked;
+            var checkbox = document.getElementById("user-deleted");
+            user.deleted = checkbox ? checkbox.checked : false;
             user.username = $("#user-name").val();
             user.email = $("#user-email").val();
             var userUrl = "/api/user/";
