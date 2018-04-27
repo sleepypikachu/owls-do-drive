@@ -270,11 +270,21 @@ func (d pgDatasource) Create(user *User) error {
 	return err
 }
 
-//FIXME:don't let me delete the last user (or add a switch to undelete Default)
 func (d pgDatasource) Update(user *User) error {
 	u := *user
-	_, err := d.db.Exec("UPDATE users SET name = $2, email = $3, deleted = $4 WHERE num = $1", u.Num, u.Name, u.Email, u.Deleted)
-	return err
+	tx, err := d.db.Begin()
+	_, err = tx.Exec("UPDATE users SET name = $2, email = $3, deleted = $4 WHERE num = $1", u.Num, u.Name, u.Email, u.Deleted)
+	if err != nil {
+		return tx.Rollback();
+	}
+
+	var count int
+	row := tx.QueryRow("SELECT COUNT(*) FROM users WHERE NOT deleted", u.Num)
+	row.Scan(&count)
+	if count <= 0 {
+		return tx.Rollback()
+	}
+	return tx.Commit()
 }
 
 func (d pgDatasource) List() *[]User {
