@@ -598,7 +598,6 @@ func handleNewPost(d Datasource) gin.HandlerFunc {
 }
 
 func handleDeleteUser(d Datasource) gin.HandlerFunc {
-	//FIXME:don't allow deletion of last user
 	//FIXME:side effects of mutation of logged in user (fix with id in context and look up from id -> name cache which is invalidated for id/globally by mutation functions, should probably live inside the DB
 	del := func(u *User) error {
 		u.Deleted = true
