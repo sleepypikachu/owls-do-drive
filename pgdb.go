@@ -96,18 +96,14 @@ func (d pgDatasource) Get(num int, admin bool) *Post {
 
 func (d pgDatasource) Store(p *Post) error {
 	var err error
-	tx, err := d.db.Begin()
-	if err != nil {
-		return err
-	}
 	if p.Num != 0 {
 		//UPDATE
-		_, err = tx.Exec("UPDATE posts SET title = $2, alt = $3, image = $4, posted = $5, deleted = $6 where num = $1", p.Num, p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
+		_, err = d.db.Exec("UPDATE posts SET title = $2, alt = $3, image = $4, posted = $5, deleted = $6 where num = $1", p.Num, p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
 	} else {
 		//CREATE
-		_, err = tx.Exec("INSERT INTO posts(title, alt, image, posted, deleted) values($1, $2, $3, $4, $5)", p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
+		_, err = d.db.Exec("INSERT INTO posts(title, alt, image, posted, deleted) values($1, $2, $3, $4, $5)", p.Title, p.Alt, p.Image, p.Posted, p.Deleted)
 	}
-	return tx.Commit()
+	return err
 }
 
 func (d pgDatasource) Delete(p *Post) error {
@@ -210,45 +206,43 @@ func (d pgDatasource) FetchByName(username string) (*User, error) {
 }
 
 func (d pgDatasource) ChangePassword(user *User, newPassword string) error {
+	return d.transact(func (tx *sql.Tx) error {
+		return d.changePassword(tx, user, newPassword)
+	})
+}
+
+func (d pgDatasource) changePassword(tx *sql.Tx, user *User, newPassword string) error {
 	salt := uuid.New().String()
 	hashedPassword := hash(newPassword, salt)
-	_, err := d.db.Exec("UPDATE users SET password=$2, salt=$3 WHERE num = $1", (*user).Num, hashedPassword, salt)
+	_, err := tx.Exec("UPDATE users SET password=$2, salt=$3 WHERE num = $1", (*user).Num, hashedPassword, salt)
 	return err
 }
 
 func (d pgDatasource) ChangePasswordWithToken(user *User, newPassword string, token string) error {
-	var salt string
-	var num int
+	return d.transact(func(tx *sql.Tx) error {
+		var salt string
+		var num int
+		err := tx.QueryRow("SELECT num, salt FROM password_resets WHERE for_user = $1 AND NOT used AND current_timestamp < not_after ORDER BY num DESC", user.Num).Scan(&num, &salt)
+		if err != nil {
+			return err
+		}
 
-	tx, err := d.db.Begin()
+		hashedToken := hash(token, salt)
 
-	if err != nil {
-		return err
-	}
+		result, err := tx.Exec("UPDATE password_resets SET used = TRUE WHERE num = $1 AND reset_token = $2", num, hashedToken)
 
-	err = tx.QueryRow("SELECT num, salt FROM password_resets WHERE for_user = $1 AND NOT used AND current_timestamp < not_after ORDER BY num DESC", user.Num).Scan(&num, &salt)
+		if err != nil {
+			return err;
+		}
 
-	if err != nil {
-		tx.Commit()
-		return err
-	}
+		rows, _ := result.RowsAffected()
 
-	hashedToken := hash(token, salt)
+		if rows != 1 {
+			return errors.New("db: invalid token")
+		}
 
-	result, err := tx.Exec("UPDATE password_resets SET used = TRUE WHERE num = $1 AND reset_token = $2", num, hashedToken)
-	tx.Commit()
-
-	if err != nil {
-		return err
-	}
-
-	rows, _ := result.RowsAffected()
-
-	if rows != 1 {
-		return errors.New("db: invalid token")
-	}
-
-	return d.ChangePassword(user, newPassword)
+		return d.changePassword(tx, user, newPassword)
+	})
 }
 
 func (d pgDatasource) ResetPassword(user *User) (*string, error) {
@@ -272,19 +266,8 @@ func (d pgDatasource) Create(user *User) error {
 
 func (d pgDatasource) Update(user *User) error {
 	u := *user
-	tx, err := d.db.Begin()
-	_, err = tx.Exec("UPDATE users SET name = $2, email = $3, deleted = $4 WHERE num = $1", u.Num, u.Name, u.Email, u.Deleted)
-	if err != nil {
-		return tx.Rollback();
-	}
-
-	var count int
-	row := tx.QueryRow("SELECT COUNT(*) FROM users WHERE NOT deleted", u.Num)
-	row.Scan(&count)
-	if count <= 0 {
-		return tx.Rollback()
-	}
-	return tx.Commit()
+	_, err := d.db.Exec("UPDATE users SET name = $2, email = $3, deleted = $4 WHERE num = $1 AND EXISTS (SELECT num FROM users WHERE deleted = false AND num <> $1)", u.Num, u.Name, u.Email, u.Deleted)
+	return err
 }
 
 func (d pgDatasource) List() *[]User {
@@ -310,4 +293,23 @@ func hash(password string, salt string) string {
 	h.Write([]byte(password))
 	h.Write([]byte(salt))
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
+}
+
+func (d pgDatasource) transact(txFunc func(*sql.Tx) error) (err error) {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p) // re-throw panic after Rollback
+		} else if err != nil {
+			err = tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+	err = txFunc(tx)
+	return err
 }
