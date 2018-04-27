@@ -27,3 +27,5 @@ _testmain.go
 owls-do-drive
 static/data
 odd.cfg
+.idea
+*.iml
