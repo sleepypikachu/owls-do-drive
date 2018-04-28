@@ -206,7 +206,7 @@ func (d pgDatasource) FetchByName(username string) (*User, error) {
 }
 
 func (d pgDatasource) ChangePassword(user *User, newPassword string) error {
-	return d.transact(func (tx *sql.Tx) error {
+	return d.transact(func(tx *sql.Tx) error {
 		return d.changePassword(tx, user, newPassword)
 	})
 }
@@ -232,7 +232,7 @@ func (d pgDatasource) ChangePasswordWithToken(user *User, newPassword string, to
 		result, err := tx.Exec("UPDATE password_resets SET used = TRUE WHERE num = $1 AND reset_token = $2", num, hashedToken)
 
 		if err != nil {
-			return err;
+			return err
 		}
 
 		rows, _ := result.RowsAffected()
